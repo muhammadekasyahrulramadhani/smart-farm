@@ -80,7 +80,7 @@
             @endforeach
         </div>
 
-        <h3 class="font-semibold text-sm mt-4 mb-1">Riwayat Actuator Command</h3>
+        <h3 class="font-semibold text-sm mt-4 mb-1">5 Aktivitas Terbaru</h3>
         <div class="overflow-x-auto">
             <table class="w-full text-xs border">
                 <thead class="bg-gray-100">

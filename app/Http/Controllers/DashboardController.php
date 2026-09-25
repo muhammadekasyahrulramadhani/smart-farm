@@ -75,11 +75,11 @@ class DashboardController extends Controller
             }
         }
 
-        // Riwayat command actuator terbaru.
+        // 5 aktivitas actuator terbaru (data lama tetap tersimpan di database).
         $commandHistory = ActuatorCommand::with(['device', 'actuator'])
             ->whereIn('device_id', $project->devices()->pluck('id'))
             ->latest()
-            ->limit(15)
+            ->limit(5)
             ->get();
 
         return view('dashboard.index', [

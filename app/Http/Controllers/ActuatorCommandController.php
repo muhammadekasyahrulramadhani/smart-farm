@@ -22,17 +22,31 @@ class ActuatorCommandController extends Controller
             ? (int) ($data['duration'] ?? $this->defaultDurationFor($actuator))
             : null;
 
+        $friendlyName = $this->friendlyActuatorName($actuator);
+
         try {
-            $actuatorCommand = $publisher->send($actuator, $command, $duration);
+            $publisher->send($actuator, $command, $duration);
         } catch (\Throwable $e) {
             // MQTT broker unavailable: command already marked FAILED by the
             // publisher. Dashboard must not crash; manual input still works.
+            // request_id tetap tersimpan di database untuk tracing/debugging.
             return redirect()->route('dashboard')
-                ->with('error', 'MQTT broker tidak tersedia. Perangkat tidak dapat dihubungi.');
+                ->with('error', "Perintah {$friendlyName} gagal dikirim.");
         }
 
+        $action = $command === 'ON' ? 'dinyalakan' : 'dimatikan';
+
         return redirect()->route('dashboard')
-            ->with('success', "Perintah {$command} untuk {$actuator->actuator_type} dikirim (request {$actuatorCommand->request_id}).");
+            ->with('success', "{$friendlyName} berhasil {$action}.");
+    }
+
+    private function friendlyActuatorName(Actuator $actuator): string
+    {
+        return match ($actuator->actuator_type) {
+            'UV_LIGHT' => 'Lampu UV',
+            'MIST_MAKER' => 'Mist Maker',
+            default => $actuator->actuator_type,
+        };
     }
 
     private function defaultDurationFor(Actuator $actuator): int

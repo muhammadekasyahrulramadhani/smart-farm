@@ -1,0 +1,14 @@
+{
+    "name": "smartfarm-mqtt-simulator",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Virtual ESP32 (UV Light & Mist Maker) for Smart Farm MQTT end-to-end testing. DEV/TEST ONLY - not part of the production Laravel app.",
+    "type": "commonjs",
+    "scripts": {
+        "start": "node mqtt_simulator.js",
+        "self-test": "node mqtt_simulator.js --self-test"
+    },
+    "dependencies": {
+        "mqtt": "^5.10.0"
+    }
+}

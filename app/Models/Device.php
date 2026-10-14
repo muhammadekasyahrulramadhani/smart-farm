@@ -2,42 +2,20 @@
 
 namespace App\Models;
 
-use App\Enums\DeviceStatus;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Device extends Model
 {
-    use HasFactory;
+    protected $fillable = ['name', 'type', 'bedengan', 'last_seen_at', 'ip_address'];
 
-    protected $fillable = [
-        'project_id',
-        'device_id',
-        'name',
-        'status',
-        'last_seen',
-        'firmware_version',
-    ];
-
-    protected $casts = [
-        'status' => DeviceStatus::class,
-        'last_seen' => 'datetime',
-    ];
-
-    public function project(): BelongsTo
+    protected function casts(): array
     {
-        return $this->belongsTo(Project::class);
+        return ['last_seen_at' => 'datetime'];
     }
 
-    public function actuators(): HasMany
+    public function isOnline(int $thresholdSeconds = 90): bool
     {
-        return $this->hasMany(Actuator::class);
-    }
-
-    public function actuatorCommands(): HasMany
-    {
-        return $this->hasMany(ActuatorCommand::class);
+        return $this->last_seen_at
+            && $this->last_seen_at->diffInSeconds(now()) <= $thresholdSeconds;
     }
 }

@@ -1,28 +1,59 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Farm Cabai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <h2 class="text-success fw-bold">🌱 Smart Farm</h2>
+            <p class="text-muted">Login Dashboard IoT</p>
+        </div>
 
-@section('title', 'Login - Smart Farm Cabai')
+        @if($errors->any())
+            <div class="alert alert-danger py-2">
+                {{ $errors->first() }}
+            </div>
+        @endif
 
-@section('content')
-<div class="max-w-md mx-auto bg-white rounded shadow p-6 mt-10">
-    <h2 class="text-lg font-bold mb-1">Login Smart Farm Cabai</h2>
-    <p class="text-sm text-gray-500 mb-4">Masuk untuk mengelola penyemprotan &amp; perangkat IoT.</p>
-    <form method="POST" action="{{ route('login.attempt') }}">
-        @csrf
-        <label class="block text-sm font-medium mb-1" for="email">Email</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" required
-               class="w-full border rounded px-3 py-2 mb-3">
+        <form method="POST" action="/login">
+            @csrf
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" value="admin" required autofocus autocomplete="username">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" value="admin123" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100 py-2">Login</button>
+        </form>
 
-        <label class="block text-sm font-medium mb-1" for="password">Password</label>
-        <input id="password" type="password" name="password" required
-               class="w-full border rounded px-3 py-2 mb-3">
-
-        <label class="flex items-center gap-2 text-sm mb-4">
-            <input type="checkbox" name="remember" value="1"> Ingat saya
-        </label>
-
-        <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-2 rounded">
-            Login
-        </button>
-    </form>
-</div>
-@endsection
+        <div class="mt-4 p-3 bg-light rounded text-muted small">
+            <strong>Demo Akun (2 permission, tanpa email):</strong><br>
+            • Admin (kontrol IoT + input + hapus):<br><code>admin</code> / <code>admin123</code><br>
+            • User (input + lihat, tanpa hapus & tanpa kontrol IoT):<br><code>user</code> / <code>user123</code>
+        </div>
+    </div>
+</body>
+</html>

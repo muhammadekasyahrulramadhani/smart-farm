@@ -1,6 +1,6 @@
 // Contoh ESP32 -> Dashboard Smart Farm Cabai
-// 1) Heartbeat tiap 30 detik (POST /api/devices/heartbeat) agar panel
-//    "Status Koneksi Perangkat" menampilkan Online + waktu terakhir kirim.
+// 1) Heartbeat tiap 30 detik (POST /api/devices/heartbeat) agar kehadiran
+//    perangkat tercatat (last_seen) di server.
 // 2) Laporan ON/OFF aktuator (POST /api/device-activities/report) setiap
 //    relay berubah agar panel "Aktivitas Aktuator" tampil real-time.
 // Sesuaikan WIFI_SSID, WIFI_PASS, SERVER_IP, DEVICE_TOKEN, DEVICE_NAME.

@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.session' => \App\Http\Middleware\EnsureSessionLoggedIn::class,
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/devices/heartbeat',
+            'api/device-activities/report',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

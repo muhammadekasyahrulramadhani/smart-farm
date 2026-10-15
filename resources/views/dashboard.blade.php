@@ -64,9 +64,6 @@
             <div class="col-md-12">
                 <div class="card shadow-sm p-4 bg-white rounded-3">
                     <h4 class="mb-3"><i class="bi bi-cpu"></i> Kontrol Perangkat IoT (Auto-Off Timer)</h4>
-                    @if(($role ?? 'admin') !== 'admin')
-                        <div class="alert alert-warning py-2 small mb-3">🔒 Mode User: Anda hanya dapat melihat status. Kontrol perangkat hanya untuk Admin.</div>
-                    @endif
                     <div class="row">
                         <!-- Lampu LED -->
                         <div class="col-md-6 mb-3 mb-md-0">
@@ -93,30 +90,8 @@
             </div>
         </div>
 
-        <!-- Status Koneksi Perangkat (daftar ESP32 yang mengirim data via heartbeat) -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card shadow-sm p-4 bg-white rounded-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h4 class="mb-0"><i class="bi bi-hdd-network"></i> Status Koneksi Perangkat</h4>
-                        <span class="small text-muted">Online bila heartbeat &lt; 90 detik • refresh otomatis 10 detik</span>
-                    </div>
-                    <div id="deviceList" class="row g-2"></div>
-                    @if(($role ?? 'admin') === 'admin')
-                    <form onsubmit="addDevice(event)" class="row g-2 mt-3">
-                        <div class="col-md-4"><input type="text" id="newDeviceName" class="form-control form-control-sm" placeholder="Nama perangkat (cth: Lampu-UV-02)" required maxlength="50" pattern="[A-Za-z0-9_-]+"></div>
-                        <div class="col-md-3">
-                            <select id="newDeviceType" class="form-select form-select-sm"><option value="lampu">lampu</option><option value="mist">mist</option><option value="lain">lain</option></select>
-                        </div>
-                        <div class="col-md-3"><input type="text" id="newDeviceBedengan" class="form-control form-control-sm" placeholder="Bedengan (opsional)" maxlength="50"></div>
-                        <div class="col-md-2"><button type="submit" class="btn btn-success btn-sm w-100">+ Tambah</button></div>
-                    </form>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Umpan Aktivitas Aktuator ON/OFF (dilaporkan ESP & tombol web) -->
+        @if(($role ?? 'admin') === 'admin')
+        <!-- Umpan Aktivitas Aktuator ON/OFF (khusus Admin; dilaporkan ESP & tombol web) -->
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card shadow-sm p-4 bg-white rounded-3">
@@ -141,6 +116,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="row mb-4">
             <!-- Form Catat Penyemprotan (Admin & User boleh input) -->
@@ -405,17 +381,16 @@
 
         let deviceCache = [];
 
+        // Daftar perangkat tetap dimuat diam-diam untuk resolusi nama saat mencatat toggle web
         function loadDevices() {
             fetch('/api/devices')
                 .then(res => res.json())
-                .then(data => {
-                    deviceCache = Array.isArray(data) ? data : [];
-                    renderDevices(deviceCache);
-                })
-                .catch(() => renderDevices([]));
+                .then(data => { deviceCache = Array.isArray(data) ? data : []; })
+                .catch(() => { deviceCache = []; });
         }
 
         function loadActivities() {
+            if (!document.getElementById('activityFeedBody')) return; // panel khusus Admin
             fetch('/api/device-activities')
                 .then(res => res.json())
                 .then(data => renderActivities(Array.isArray(data) ? data : []))
@@ -443,53 +418,6 @@
 
         function refreshDevicePanels() { loadDevices(); loadActivities(); }
 
-        function renderDevices(devices) {
-            const container = document.getElementById('deviceList');
-            if (!container) return;
-            if (!devices.length) {
-                container.innerHTML = '<div class="col-12 text-muted small">Belum ada perangkat terdaftar.</div>';
-                return;
-            }
-            const icon = t => t === 'lampu' ? '💡' : (t === 'mist' ? '💨' : '🔧');
-            container.innerHTML = devices.map(d => `
-                <div class="col-md-4">
-                    <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${icon(d.type)} ${d.name}</strong><br>
-                            <span class="badge ${d.is_online ? 'bg-success' : 'bg-secondary'}">${d.is_online ? '🟢 Online' : '⚪ Offline'}</span>
-                            <div class="small text-muted mt-1">${d.bedengan ?? '-'} • terakhir kirim: ${d.last_seen_at ? new Date(d.last_seen_at).toLocaleString('id-ID') : 'belum pernah'}</div>
-                        </div>
-                        ${isAdmin ? `<button onclick="deleteDevice(${d.id})" class="btn btn-danger btn-sm">Hapus</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addDevice(e) {
-            e.preventDefault();
-            const payload = {
-                name: document.getElementById('newDeviceName').value.trim(),
-                type: document.getElementById('newDeviceType').value,
-                bedengan: document.getElementById('newDeviceBedengan').value.trim()
-            };
-            fetch('/api/devices/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify(payload)
-            }).then(res => res.json()).then(result => {
-                if (result.success) { e.target.reset(); loadDevices(); }
-                else if (result.error) alert(result.error);
-                else if (result.message) alert(result.message);
-            });
-        }
-
-        function deleteDevice(id) {
-            if (!confirm('Hapus perangkat ini dari daftar?')) return;
-            fetch(`/api/devices/delete/${id}`, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-            }).then(res => res.json()).then(result => { if (result.success) loadDevices(); });
-        }
         setInterval(refreshDevicePanels, 10000);
 
         function loadHistory() {

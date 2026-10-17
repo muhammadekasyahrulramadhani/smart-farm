@@ -154,7 +154,7 @@
             <!-- Kalender & Jadwal Berikutnya -->
             <div class="col-md-6">
                 <div class="card shadow-sm p-4 bg-white rounded-3 h-100">
-                    <h4 class="mb-3"><i class="bi bi-calendar-check"></i> Kalender September 2026</h4>
+                    <h4 class="mb-3" id="calendarTitle"><i class="bi bi-calendar-check"></i> Kalender</h4>
                     <div class="alert alert-info py-2 mb-3 small">
                         <strong>Status Kalender:</strong> Menampilkan penanda tanggal penyemprotan aktif.
                     </div>
@@ -166,7 +166,7 @@
                     </div>
                     <div class="mt-3 small text-muted">
                         <span class="badge bg-success">&nbsp;</span> Sudah Semprot &nbsp;&nbsp;
-                        <span class="badge bg-info">&nbsp;</span> Hari Ini (20 Sep)
+                        <span class="badge bg-info">&nbsp;</span> Hari Ini
                     </div>
                 </div>
             </div>
@@ -707,17 +707,37 @@
 
         function renderCalendar() {
             let container = document.getElementById('calendarDays');
+            let titleEl = document.getElementById('calendarTitle');
+            if (!container) return;
             container.innerHTML = '';
+            
+            let now = new Date();
+            let year = now.getFullYear();
+            let month = now.getMonth(); // 0 - 11
+            let todayDate = now.getDate();
+            let todayMonth = now.getMonth();
+            let todayYear = now.getFullYear();
+
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            if (titleEl) {
+                titleEl.innerHTML = `<i class="bi bi-calendar-check"></i> Kalender ${monthNames[month]} ${year}`;
+            }
+
+            let firstDay = new Date(year, month, 1).getDay();
+            let totalDays = new Date(year, month + 1, 0).getDate();
             let sprayedDates = historyData.map(h => h.date);
             
-            for(let i=0; i<2; i++) {
+            for(let i=0; i<firstDay; i++) {
                 container.innerHTML += `<div></div>`;
             }
 
-            for(let day=1; day<=30; day++) {
-                let dayStr = `2026-09-${String(day).padStart(2, '0')}`;
+            for(let day=1; day<=totalDays; day++) {
+                let mStr = String(month + 1).padStart(2, '0');
+                let dStr = String(day).padStart(2, '0');
+                let dayStr = `${year}-${mStr}-${dStr}`;
+                
                 let isSprayed = sprayedDates.includes(dayStr);
-                let isToday = (day === 20);
+                let isToday = (day === todayDate && month === todayMonth && year === todayYear);
                 
                 let cls = 'calendar-day';
                 if (isSprayed) cls += ' sprayed';

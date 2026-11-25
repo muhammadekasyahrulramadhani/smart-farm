@@ -6,43 +6,51 @@ use App\Models\PestObservation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class PestObservationController extends Controller
 {
-    /**
-     * Get all pest observations ordered by date ascending.
-     */
     public function index(): JsonResponse
     {
-        return response()->json(PestObservation::orderBy('date', 'asc')->get());
+        return response()->json(
+            PestObservation::orderBy('date', 'asc')->get()
+        );
     }
 
-    /**
-     * Store a newly created pest observation record.
-     */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'date'     => ['required', 'date'],
+            'date' => ['required', 'date'],
             'bedengan' => ['required', 'string'],
-            'severity' => ['required', 'string'],
-            'count'    => ['nullable', 'integer', 'min:0'],
+            'pest_type' => [
+                'required',
+                Rule::in(['Kutu Daun', 'Kutu Kebul', 'Gejala Jamur', 'Lainnya']),
+            ],
+            'severity' => [
+                'required',
+                Rule::in(['Ringan', 'Sedang', 'Berat']),
+            ],
+            'affected_plants' => ['required', 'integer', 'min:0'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         $obs = PestObservation::create([
-            'date'     => $data['date'],
+            'date' => $data['date'],
             'bedengan' => $data['bedengan'],
+            'pest_type' => $data['pest_type'],
             'severity' => $data['severity'],
-            'count'    => $data['count'] ?? 0,
-            'user'     => session('username', 'admin'),
+            'affected_plants' => $data['affected_plants'],
+            'notes' => $data['notes'] ?? null,
+            'count' => 0,
+            'user' => session('username', 'admin'),
         ]);
 
-        return response()->json(['success' => true, 'observation' => $obs], 201);
+        return response()->json([
+            'success' => true,
+            'observation' => $obs,
+        ], 201);
     }
 
-    /**
-     * Update an existing pest observation record (owner or admin).
-     */
     public function update(Request $request, int|string $id): JsonResponse
     {
         $obs = PestObservation::findOrFail($id);
@@ -54,28 +62,36 @@ class PestObservationController extends Controller
         }
 
         $data = $request->validate([
-            'date'     => ['sometimes', 'date'],
+            'date' => ['sometimes', 'date'],
             'bedengan' => ['sometimes', 'string'],
-            'severity' => ['sometimes', 'string'],
-            'count'    => ['nullable', 'integer', 'min:0'],
+            'pest_type' => [
+                'sometimes',
+                Rule::in(['Kutu Daun', 'Kutu Kebul', 'Gejala Jamur', 'Lainnya']),
+            ],
+            'severity' => [
+                'sometimes',
+                Rule::in(['Ringan', 'Sedang', 'Berat']),
+            ],
+            'affected_plants' => ['sometimes', 'integer', 'min:0'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         $obs->update($data);
 
-        return response()->json(['success' => true, 'observation' => $obs]);
+        return response()->json([
+            'success' => true,
+            'observation' => $obs,
+        ]);
     }
 
-    /**
-     * Delete a pest observation record (Admin only).
-     */
     public function destroy(int|string $id): JsonResponse
     {
         $obs = PestObservation::findOrFail($id);
         $obs->delete();
 
         Log::info('Observasi hama dihapus', [
-            'id'   => $id,
-            'by'   => session('username'),
+            'id' => $id,
+            'by' => session('username'),
             'role' => session('role'),
         ]);
 

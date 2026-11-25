@@ -24,6 +24,10 @@ Route::middleware('auth.session')->group(function () {
     Route::get('/api/observations', [PestObservationController::class, 'index']);
     Route::get('/api/bedengans', [BedenganController::class, 'index']);
     Route::get('/api/devices', [DeviceController::class, 'index']);
+    Route::get('/api/device-states', [DeviceController::class, 'getStates']);
+
+    // Control Actuators (All authenticated roles)
+    Route::post('/api/device-activities/web', [DeviceController::class, 'logWebActivity']);
 
     // Input Data (All roles)
     Route::post('/api/history/add', [SprayHistoryController::class, 'store']);
@@ -41,7 +45,6 @@ Route::middleware('auth.session')->group(function () {
 
         // Live Actuator activities feed & web toggle logging
         Route::get('/api/device-activities', [DeviceController::class, 'getActivities']);
-        Route::post('/api/device-activities/web', [DeviceController::class, 'logWebActivity']);
 
         // Manage devices
         Route::post('/api/devices/add', [DeviceController::class, 'store']);

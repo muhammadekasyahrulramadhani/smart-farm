@@ -69,7 +69,7 @@
                         <div class="col-md-6 mb-3 mb-md-0">
                             <div class="p-3 border rounded bg-light">
                                 <h5 class="mb-2">💡 Lampu LED (Penerangan)</h5>
-                                <button id="btnLight" onclick="toggleDevice('light')" class="btn btn-secondary btn-lg w-100 mb-2" @if(($role ?? 'admin') !== 'admin') disabled @endif>
+                                <button id="btnLight" onclick="toggleDevice('light')" class="btn btn-secondary btn-lg w-100 mb-2">
                                     Status: <span id="statusLight">OFF</span>
                                 </button>
                                 <div class="text-muted small">Auto-off: 30 Menit | Timer: <span id="timerLight" class="fw-bold text-dark">--:--</span></div>
@@ -79,7 +79,7 @@
                         <div class="col-md-6">
                             <div class="p-3 border rounded bg-light">
                                 <h5 class="mb-2">💨 Mist Maker (Penyemprotan)</h5>
-                                <button id="btnMist" onclick="toggleDevice('mist')" class="btn btn-secondary btn-lg w-100 mb-2" @if(($role ?? 'admin') !== 'admin') disabled @endif>
+                                <button id="btnMist" onclick="toggleDevice('mist')" class="btn btn-secondary btn-lg w-100 mb-2">
                                     Status: <span id="statusMist">OFF</span>
                                 </button>
                                 <div class="text-muted small">Auto-off: 5 Menit | Timer: <span id="timerMist" class="fw-bold text-dark">--:--</span></div>
@@ -172,36 +172,59 @@
             </div>
         </div>
 
-        <!-- Form Input Observasi Hama (Admin & User boleh input) -->
+        <!-- Form Input Observasi Hama dan Penyakit -->
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card shadow-sm p-4 bg-white rounded-3">
-                    <h4 class="mb-3"><i class="bi bi-bug"></i> Input Observasi Hama (Sticky Trap)</h4>
+                    <h4 class="mb-3"><i class="bi bi-bug"></i> Input Observasi Hama dan Penyakit</h4>
                     <form id="observationForm" onsubmit="saveObservation(event)" class="row g-3">
                         <input type="hidden" id="editObsId" value="">
+
                         <div class="col-md-3">
-                            <label class="form-label">Tanggal</label>
+                            <label class="form-label">Tanggal Pengamatan</label>
                             <input type="date" id="obsDate" class="form-control" required>
                         </div>
+
                         <div class="col-md-3">
                             <label class="form-label">Bedengan</label>
-                            <select id="obsBedengan" class="form-select"></select>
+                            <select id="obsBedengan" class="form-select" required></select>
                         </div>
+
                         <div class="col-md-3">
-                            <label class="form-label">Tingkat Serangan</label>
-                            <select id="obsSeverity" class="form-select">
-                                <option>Ringan</option>
-                                <option>Sedang</option>
-                                <option>Berat</option>
+                            <label class="form-label">Jenis Gangguan</label>
+                            <select id="obsPestType" class="form-select" required>
+                                <option value="Kutu Daun">Kutu Daun</option>
+                                <option value="Kutu Kebul">Kutu Kebul</option>
+                                <option value="Gejala Jamur">Gejala Jamur</option>
+                                <option value="Lainnya">Lainnya</option>
                             </select>
                         </div>
+
                         <div class="col-md-3">
-                            <label class="form-label">Jumlah Serangga (Sticky Trap)</label>
-                            <input type="number" id="obsCount" class="form-control" placeholder="Contoh: 20" min="0" required>
+                            <label class="form-label">Tingkat Serangan</label>
+                            <select id="obsSeverity" class="form-select" required>
+                                <option value="Ringan">Ringan</option>
+                                <option value="Sedang">Sedang</option>
+                                <option value="Berat">Berat</option>
+                            </select>
                         </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Jumlah Tanaman Terdampak</label>
+                            <input type="number" id="obsAffectedPlants" class="form-control"
+                                placeholder="Contoh: 15" min="0" required>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label">Catatan Pengamatan (Opsional)</label>
+                            <textarea id="obsNotes" class="form-control" rows="2"
+                                placeholder="Deskripsikan kondisi tanaman atau gejala yang ditemukan"></textarea>
+                        </div>
+
                         <div class="col-12">
-                            <button type="submit" id="obsSubmitBtn" class="btn btn-primary">💾 Simpan Observasi Hama</button>
-                            <button type="button" id="obsCancelBtn" onclick="cancelEditObs()" class="btn btn-secondary d-none ms-2">Batal Edit</button>
+                            <button type="submit" id="obsSubmitBtn" class="btn btn-primary">💾 Simpan Observasi</button>
+                            <button type="button" id="obsCancelBtn" onclick="cancelEditObs()"
+                                class="btn btn-secondary d-none ms-2">Batal Edit</button>
                         </div>
                     </form>
                 </div>
@@ -266,8 +289,10 @@
                                 <tr>
                                     <th>Tanggal</th>
                                     <th>Bedengan</th>
+                                    <th>Jenis Gangguan</th>
                                     <th>Tingkat</th>
-                                    <th>Jumlah</th>
+                                    <th>Tanaman Terdampak</th>
+                                    <th>Catatan</th>
                                     <th>Diinput oleh</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -326,7 +351,7 @@
         <div class="row">
             <div class="col-md-6 mb-4">
                 <div class="card shadow-sm p-3 bg-white rounded-3">
-                    <h5 class="card-title">📈 Tren Populasi Hama (Sticky Trap)</h5>
+                    <h5 class="card-title">📈 Tren Temuan Hama dan Penyakit</h5>
                     <canvas id="pestChart"></canvas>
                 </div>
             </div>
@@ -400,12 +425,20 @@
         function renderActivities(items) {
             const tbody = document.getElementById('activityFeedBody');
             if (!tbody) return;
+
             if (!items.length) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-muted small">Belum ada aktivitas. ESP melaporkan otomatis saat aktuator ON/OFF.</td></tr>';
                 return;
             }
+
+            // Urutkan aktivitas terbaru dan tampilkan maksimal 10
+            const latestItems = [...items]
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 10);
+
             const icon = a => a === 'lampu' ? '💡' : (a === 'mist' ? '💨' : '🔧');
-            tbody.innerHTML = items.map(a => `
+
+            tbody.innerHTML = latestItems.map(a => `
                 <tr>
                     <td class="small">${a.created_at ? new Date(a.created_at).toLocaleString('id-ID') : '-'}</td>
                     <td>${a.device_name}</td>
@@ -416,7 +449,30 @@
             `).join('');
         }
 
-        function refreshDevicePanels() { loadDevices(); loadActivities(); }
+        function loadDeviceStates() {
+            fetch('/api/device-states')
+                .then(res => res.json())
+                .then(states => {
+                    for (const [actuator, status] of Object.entries(states)) {
+                        const key = actuator === 'lampu' ? 'light' : 'mist';
+                        if (!devices[key]) continue;
+
+                        devices[key].active = status === 'on';
+                        if (devices[key].active && devices[key].remaining <= 0) {
+                            devices[key].remaining = devices[key].duration;
+                        }
+                        updateDeviceUI(key);
+                    }
+                })
+                .catch(error => console.error('Gagal membaca status ESP:', error));
+        }
+
+        function refreshDevicePanels() {
+            loadDevices();
+            loadActivities();
+            loadDeviceStates();
+        }
+
 
         setInterval(refreshDevicePanels, 10000);
 
@@ -459,37 +515,76 @@
             mist: { active: false, remaining: 300, duration: 300, actuator: 'mist' }
         };
 
-        function logWebActivity(key, status) {
-            const match = deviceCache.find(d => d.type === devices[key].actuator);
-            fetch('/api/device-activities/web', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({
-                    actuator: devices[key].actuator,
-                    status: status,
-                    device_name: match ? match.name : null
-                })
-            }).then(res => res.json()).then(result => {
-                if (result.success) loadActivities();
-            }).catch(() => {});
+
+async function logWebActivity(key, status) {
+    const match = deviceCache.find(
+        d => d.type === devices[key].actuator
+    );
+
+    try {
+        const response = await fetch('/api/device-activities/web', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                actuator: devices[key].actuator,
+                status: status,
+                device_name: match ? match.name : null
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Perintah gagal dikirim.');
         }
 
-        function toggleDevice(key) {
-            if (userRole !== 'admin') {
-                alert('Hanya Admin yang dapat mengontrol perangkat IoT.');
-                return;
-            }
-            devices[key].active = !devices[key].active;
-            if (devices[key].active) devices[key].remaining = devices[key].duration;
-            updateDeviceUI(key);
-            logWebActivity(key, devices[key].active ? 'on' : 'off');
-        }
+        loadActivities();
+        return true;
+
+    } catch (error) {
+        alert('Gagal mengontrol perangkat: ' + error.message);
+        return false;
+    }
+}
+
+async function toggleDevice(key) {
+
+
+    const newStatus = !devices[key].active;
+
+    const btn = document.getElementById(
+        key === 'light' ? 'btnLight' : 'btnMist'
+    );
+
+    btn.disabled = true;
+
+    const success = await logWebActivity(
+        key,
+        newStatus ? 'on' : 'off'
+    );
+
+    btn.disabled = false;
+
+    if (!success) return;
+
+    devices[key].active = newStatus;
+
+    if (newStatus) {
+        devices[key].remaining = devices[key].duration;
+    }
+
+    updateDeviceUI(key);
+}
+
 
         function updateDeviceUI(key) {
             let dev = devices[key];
             let btn = document.getElementById(key === 'light' ? 'btnLight' : 'btnMist');
             let statusSpan = document.getElementById(key === 'light' ? 'statusLight' : 'statusMist');
-            
+
             if (dev.active) {
                 btn.className = key === 'light' ? 'btn btn-warning btn-lg w-100 mb-2 text-dark fw-bold' : 'btn btn-primary btn-lg w-100 mb-2 fw-bold';
                 statusSpan.innerText = 'ON';
@@ -500,21 +595,45 @@
             }
         }
 
-        setInterval(() => {
-            for (let key in devices) {
-                if (devices[key].active && devices[key].remaining > 0) {
-                    devices[key].remaining--;
-                    let m = Math.floor(devices[key].remaining / 60);
-                    let s = devices[key].remaining % 60;
-                    document.getElementById(key === 'light' ? 'timerLight' : 'timerMist').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-                    if (devices[key].remaining === 0) {
-                        devices[key].active = false;
-                        updateDeviceUI(key);
-                        if (userRole === 'admin') logWebActivity(key, 'off');
-                    }
+
+setInterval(async () => {
+    for (let key in devices) {
+        const dev = devices[key];
+
+        if (dev.active && dev.remaining > 0) {
+            dev.remaining--;
+
+            let m = Math.floor(dev.remaining / 60);
+            let s = dev.remaining % 60;
+
+            document.getElementById(
+                key === 'light' ? 'timerLight' : 'timerMist'
+            ).innerText =
+                `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+            if (dev.remaining === 0) {
+                const btn = document.getElementById(
+                    key === 'light' ? 'btnLight' : 'btnMist'
+                );
+
+                btn.disabled = true;
+
+                const success = await logWebActivity(key, 'off');
+
+                btn.disabled = false;
+
+                if (success) {
+                    dev.active = false;
+                    updateDeviceUI(key);
+                } else {
+                    // Jangan menganggap perangkat sudah OFF jika gagal.
+                    dev.remaining = 1;
                 }
             }
-        }, 1000);
+        }
+    }
+}, 1000);
+
 
         function canEdit(itemUser) {
             return isAdmin || itemUser === currentUsername;
@@ -616,23 +735,45 @@
             });
         }
 
+        function escapeObsHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            })[char]);
+        }
+
         function renderObservations() {
             const tbody = document.getElementById('obsTableBody');
             if (!tbody) return;
+
             tbody.innerHTML = '';
+
             const filterSel = document.getElementById('filterObsUser');
             const filterUser = filterSel ? filterSel.value : '';
-            let sorted = [...observationData].sort((a,b) => new Date(b.date) - new Date(a.date));
-            if (filterUser) sorted = sorted.filter(o => o.user === filterUser);
+
+            let sorted = [...observationData].sort(
+                (a, b) => new Date(b.date) - new Date(a.date)
+            );
+
+            if (filterUser) {
+                sorted = sorted.filter(o => o.user === filterUser);
+            }
+
             sorted.forEach(item => {
                 const editable = canEdit(item.user);
+
                 tbody.innerHTML += `
                     <tr>
-                        <td>${item.date}</td>
-                        <td>${item.bedengan}</td>
-                        <td>${item.severity}</td>
-                        <td>${item.count}</td>
-                        <td><span class="badge bg-secondary">${item.user ?? '-'}</span></td>
+                        <td>${escapeObsHtml(item.date)}</td>
+                        <td>${escapeObsHtml(item.bedengan)}</td>
+                        <td>${escapeObsHtml(item.pest_type ?? 'Data lama')}</td>
+                        <td>${escapeObsHtml(item.severity)}</td>
+                        <td>${item.affected_plants ?? '-'}</td>
+                        <td>${escapeObsHtml(item.notes || '-')}</td>
+                        <td><span class="badge bg-secondary">${escapeObsHtml(item.user ?? '-')}</span></td>
                         <td>
                             ${editable ? `<button onclick="editObs(${item.id})" class="btn btn-warning btn-sm me-1">Edit</button>` : ''}
                             ${isAdmin ? `<button onclick="deleteObs(${item.id})" class="btn btn-danger btn-sm">Hapus</button>` : ''}
@@ -645,55 +786,97 @@
 
         function saveObservation(e) {
             e.preventDefault();
+
             const editId = document.getElementById('editObsId').value;
+
             const payload = {
                 date: document.getElementById('obsDate').value,
                 bedengan: document.getElementById('obsBedengan').value,
+                pest_type: document.getElementById('obsPestType').value,
                 severity: document.getElementById('obsSeverity').value,
-                count: parseInt(document.getElementById('obsCount').value)
+                affected_plants: parseInt(
+                    document.getElementById('obsAffectedPlants').value,
+                    10
+                ),
+                notes: document.getElementById('obsNotes').value
             };
-            const url = editId ? `/api/observations/update/${editId}` : '/api/observations/add';
+
+            const url = editId
+                ? `/api/observations/update/${editId}`
+                : '/api/observations/add';
 
             fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
                 body: JSON.stringify(payload)
             })
-            .then(res => res.json())
+            .then(async res => {
+                const result = await res.json();
+
+                if (!res.ok) {
+                    const errors = result.errors
+                        ? Object.values(result.errors).flat().join('\n')
+                        : result.message || result.error || 'Gagal menyimpan observasi.';
+                    throw new Error(errors);
+                }
+
+                return result;
+            })
             .then(result => {
-                if(result.success) {
+                if (result.success) {
                     cancelEditObs();
                     loadData();
-                    if (!editId) alert('Observasi hama berhasil disimpan ke Database!');
-                } else if (result.error) {
-                    alert(result.error);
+                    alert(editId
+                        ? 'Observasi berhasil diperbarui!'
+                        : 'Observasi berhasil disimpan!');
                 }
-            });
+            })
+            .catch(error => alert(error.message));
         }
-        function addObservation(e) { saveObservation(e); }
+
+        function addObservation(e) {
+            saveObservation(e);
+        }
 
         function editObs(id) {
-            const item = observationData.find(o => o.id === id);
+            const item = observationData.find(o => o.id == id);
             if (!item) return;
-            if (!canEdit(item.user)) { alert('Hanya pemilik data / admin yang boleh edit.'); return; }
+
+            if (!canEdit(item.user)) {
+                alert('Hanya pemilik data / admin yang boleh edit.');
+                return;
+            }
+
             document.getElementById('editObsId').value = id;
             document.getElementById('obsDate').value = item.date;
             document.getElementById('obsBedengan').value = item.bedengan;
+            document.getElementById('obsPestType').value = item.pest_type || 'Lainnya';
             document.getElementById('obsSeverity').value = item.severity;
-            document.getElementById('obsCount').value = item.count;
+            document.getElementById('obsAffectedPlants').value = item.affected_plants ?? 0;
+            document.getElementById('obsNotes').value = item.notes || '';
+
             document.getElementById('obsSubmitBtn').innerText = '✏️ Update Observasi';
             document.getElementById('obsCancelBtn').classList.remove('d-none');
+
+            document.getElementById('observationForm').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
         }
 
         function cancelEditObs() {
             document.getElementById('editObsId').value = '';
-            const f = document.getElementById('observationForm');
-            if (f) f.reset();
+
+            const form = document.getElementById('observationForm');
+            if (form) form.reset();
+
             document.getElementById('obsDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('obsSubmitBtn').innerText = '💾 Simpan Observasi Hama';
+            document.getElementById('obsSubmitBtn').innerText = '💾 Simpan Observasi';
             document.getElementById('obsCancelBtn').classList.add('d-none');
         }
-
         function deleteObs(id) {
             if (!isAdmin) { alert('Hanya Admin yang dapat menghapus.'); return; }
             if(!confirm('Hapus observasi ini?')) return;
@@ -710,7 +893,7 @@
             let titleEl = document.getElementById('calendarTitle');
             if (!container) return;
             container.innerHTML = '';
-            
+
             let now = new Date();
             let year = now.getFullYear();
             let month = now.getMonth(); // 0 - 11
@@ -726,7 +909,7 @@
             let firstDay = new Date(year, month, 1).getDay();
             let totalDays = new Date(year, month + 1, 0).getDate();
             let sprayedDates = historyData.map(h => h.date);
-            
+
             for(let i=0; i<firstDay; i++) {
                 container.innerHTML += `<div></div>`;
             }
@@ -735,10 +918,10 @@
                 let mStr = String(month + 1).padStart(2, '0');
                 let dStr = String(day).padStart(2, '0');
                 let dayStr = `${year}-${mStr}-${dStr}`;
-                
+
                 let isSprayed = sprayedDates.includes(dayStr);
                 let isToday = (day === todayDate && month === todayMonth && year === todayYear);
-                
+
                 let cls = 'calendar-day';
                 if (isSprayed) cls += ' sprayed';
                 if (isToday) cls += ' today';
@@ -890,22 +1073,72 @@
         loadData();
 
         // Charts Setup
+        const pestTypes = [
+            'Kutu Daun',
+            'Kutu Kebul',
+            'Gejala Jamur',
+            'Lainnya'
+        ];
+
+        const pestColors = [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 159, 64)',
+            'rgb(153, 102, 255)'
+        ];
+
         const ctxPest = document.getElementById('pestChart').getContext('2d');
+
         const pestChart = new Chart(ctxPest, {
             type: 'line',
             data: {
-                labels: observationData.map(o => o.date),
-                datasets: [{
-                    label: 'Jumlah Serangga Terperangkap',
-                    data: observationData.map(o => o.count),
-                    borderColor: 'rgb(255, 99, 132)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                    fill: true,
-                    tension: 0.1
-                }]
+                labels: [],
+                datasets: pestTypes.map((type, index) => ({
+                    label: type,
+                    data: [],
+                    borderColor: pestColors[index],
+                    backgroundColor: pestColors[index],
+                    tension: 0.25,
+                    fill: false
+                }))
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: context =>
+                                `${context.dataset.label}: ${context.parsed.y} tanaman`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tanggal Pengamatan'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Jumlah Tanaman Terdampak'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
             }
         });
-
         const ctxSpray = document.getElementById('sprayChart').getContext('2d');
         const sprayChart = new Chart(ctxSpray, {
             type: 'bar',
@@ -920,12 +1153,39 @@
         });
 
         function updatePestChart() {
-            let sortedObs = [...observationData].sort((a,b) => new Date(a.date) - new Date(b.date));
-            pestChart.data.labels = sortedObs.map(o => o.date);
-            pestChart.data.datasets[0].data = sortedObs.map(o => o.count);
+            const validObservations = observationData.filter(item =>
+                item.pest_type &&
+                item.affected_plants !== null &&
+                item.affected_plants !== undefined &&
+                pestTypes.includes(item.pest_type)
+            );
+
+            const dates = [...new Set(
+                validObservations.map(item => item.date)
+            )].sort((a, b) => new Date(a) - new Date(b));
+
+            const datasets = pestTypes.map((type, index) => ({
+                label: type,
+                data: dates.map(date => {
+                    return validObservations
+                        .filter(item =>
+                            item.date === date &&
+                            item.pest_type === type
+                        )
+                        .reduce((total, item) =>
+                            total + Number(item.affected_plants || 0), 0
+                        );
+                }),
+                borderColor: pestColors[index],
+                backgroundColor: pestColors[index],
+                tension: 0.25,
+                fill: false
+            }));
+
+            pestChart.data.labels = dates;
+            pestChart.data.datasets = datasets;
             pestChart.update();
         }
-
         function updateSprayChart() {
             let sortedHist = [...historyData].sort((a,b) => new Date(a.date) - new Date(b.date));
             sprayChart.data.labels = sortedHist.map(h => h.date);

@@ -6,6 +6,7 @@ use App\Models\Device;
 use App\Models\DeviceActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Services\MqttService;
 
 class DeviceController extends Controller
 {
@@ -70,20 +71,30 @@ class DeviceController extends Controller
     /**
      * Record web dashboard toggle activity (Admin only).
      */
-    public function logWebActivity(Request $request): JsonResponse
-    {
-        $data = $request->validate([
-            'actuator'    => ['required', 'in:lampu,mist'],
-            'status'      => ['required', 'in:on,off'],
-            'device_name' => ['nullable', 'string', 'max:50'],
-        ]);
+    public function logWebActivity(
+    Request $request,
+    MqttService $mqtt
+): JsonResponse {
+    $data = $request->validate([
+        'actuator'    => ['required', 'in:lampu,mist'],
+        'status'      => ['required', 'in:on,off'],
+        'device_name' => ['nullable', 'string', 'max:50'],
+    ]);
 
-        $deviceName = $data['device_name']
-            ?? Device::where('type', $data['actuator'])->orderBy('name')->value('name')
-            ?? ($data['actuator'] === 'lampu' ? 'Lampu-UV-01' : 'Mist-Maker-01');
+    $deviceName = $data['device_name']
+        ?? Device::where('type', $data['actuator'])->orderBy('name')->value('name')
+        ?? ($data['actuator'] === 'lampu' ? 'Lampu-UV-01' : 'Mist-Maker-01');
 
-        $device = Device::firstWhere('name', $deviceName);
+    $device = Device::firstWhere('name', $deviceName);
 
+    try {
+        // Kirim perintah ke ESP32 melalui MQTT.
+        $mqtt->controlActuator(
+            $data['actuator'],
+            $data['status']
+        );
+
+        // Catat aktivitas hanya setelah publish berhasil.
         $activity = DeviceActivity::create([
             'device_name' => $deviceName,
             'actuator'    => $data['actuator'],
@@ -93,8 +104,21 @@ class DeviceController extends Controller
             'bedengan'    => $device?->bedengan,
         ]);
 
-        return response()->json(['success' => true, 'activity' => $activity]);
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Perintah berhasil dikirim ke MQTT.',
+            'activity' => $activity,
+        ]);
+
+    } catch (\Throwable $e) {
+        report($e);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim perintah ke perangkat IoT.',
+        ], 502);
     }
+}
 
     /**
      * ESP32 Heartbeat endpoint.
@@ -158,5 +182,17 @@ class DeviceController extends Controller
         ]);
 
         return response()->json(['success' => true, 'activity' => $activity->id]);
+    }
+
+    public function getStates(): JsonResponse
+    {
+        $states = DeviceActivity::where('source', 'esp')
+            ->whereIn('actuator', ['lampu', 'mist'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->unique('actuator')
+            ->mapWithKeys(fn ($item) => [$item->actuator => $item->status]);
+
+        return response()->json($states);
     }
 }
